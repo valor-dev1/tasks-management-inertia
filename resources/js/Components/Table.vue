@@ -1,10 +1,7 @@
 <script setup lang="ts">
 // import { defineProps } from 'vue';
-type ColumnData = {
-  key: string;
-  label: string;
-  sortable?: boolean;
-}
+import { type ColumnData } from '@/types/index';
+
 const props = defineProps<{
   columns?: ColumnData[];
   data: [];
@@ -41,8 +38,9 @@ const props = defineProps<{
                   </th>
 
                   <th scope="col"
+                    v-for="col in columns" :key="col.key"
                     class="px-12 py-3.5 text-sm font-normal text-left rtl:text-right text-gray-500 dark:text-gray-400">
-                    Status
+                    {{ col.label }}
                   </th>
 
                   <th scope="col"
