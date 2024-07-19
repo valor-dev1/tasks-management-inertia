@@ -1,11 +1,24 @@
 <script setup lang="ts">
-// import { defineProps } from 'vue';
-import { type ColumnData } from '@/types/index';
+import { useSlots } from 'vue';
+import { type ColumnData, type Task } from '@/types/index';
 
-const props = defineProps<{
+const slots = useSlots()
+defineProps<{
   columns?: ColumnData[];
-  data: [];
+  data: Task[];
 }>()
+
+const getValue = (col: ColumnData, item: Task) => {
+  if (col.foreignKey && item[col.key]) {
+    return item[col.key][col.foreignKey];
+  }
+
+  return item[col.key];
+}
+
+const hasSlot = (name:string) => {
+  return !!slots[name];
+}
 </script>
 <template>
   <!-- component -->
@@ -18,10 +31,13 @@ const props = defineProps<{
             <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
               <thead class="bg-gray-50 dark:bg-gray-800">
                 <tr>
+
                   <th scope="col"
-                    class="py-3.5 px-4 text-sm font-normal text-left rtl:text-right text-gray-500 dark:text-gray-400">
-                    <button class="flex items-center gap-x-3 focus:outline-none">
-                      <span>Company</span>
+                    v-for="col in columns" :key="col.key"
+                    class="px-12 py-3.5 text-sm font-normal text-left rtl:text-right text-gray-500 dark:text-gray-400"
+                    :class="{[`text-${col.align || 'left'}`]: true}">
+                    <button class="flex items-center gap-x-3 focus:outline-none" v-if="col.sortable">
+                      <span>{{ col.label }}</span>
 
                       <svg class="h-3" viewBox="0 0 10 11" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path
@@ -35,26 +51,8 @@ const props = defineProps<{
                           fill="currentColor" stroke="currentColor" stroke-width="0.3" />
                       </svg>
                     </button>
+                    <span v-else>{{ col.label }}</span>
                   </th>
-
-                  <th scope="col"
-                    v-for="col in columns" :key="col.key"
-                    class="px-12 py-3.5 text-sm font-normal text-left rtl:text-right text-gray-500 dark:text-gray-400">
-                    {{ col.label }}
-                  </th>
-
-                  <th scope="col"
-                    class="px-4 py-3.5 text-sm font-normal text-left rtl:text-right text-gray-500 dark:text-gray-400">
-                    About
-                  </th>
-
-                  <th scope="col"
-                    class="px-4 py-3.5 text-sm font-normal text-left rtl:text-right text-gray-500 dark:text-gray-400">
-                    Users</th>
-
-                  <th scope="col"
-                    class="px-4 py-3.5 text-sm font-normal text-left rtl:text-right text-gray-500 dark:text-gray-400">
-                    License use</th>
 
                   <th scope="col" class="relative py-3.5 px-4">
                     <span class="sr-only">Edit</span>
@@ -62,54 +60,16 @@ const props = defineProps<{
                 </tr>
               </thead>
               <tbody class="bg-white divide-y divide-gray-200 dark:divide-gray-700 dark:bg-gray-900">
-                <tr>
-                  <td class="px-4 py-4 text-sm font-medium whitespace-nowrap">
-                    <div>
-                      <h2 class="font-medium text-gray-800 dark:text-white ">Catalog</h2>
-                      <p class="text-sm font-normal text-gray-600 dark:text-gray-400">
-                        catalogapp.io</p>
-                    </div>
-                  </td>
-                  <td class="px-12 py-4 text-sm font-medium whitespace-nowrap">
+                <tr v-for="(item, index) in data" :key="index">
+                  <td class="px-12 py-4 text-sm font-medium whitespace-nowrap" v-for="col in columns" :key="col.key" :class="{[`text-${col.align || 'left'}`]: true}">
+                    <template v-if="hasSlot(col.key)"><slot :name="col.key" :item="item" /></template>
                     <div
-                      class="inline px-3 py-1 text-sm font-normal rounded-full text-emerald-500 gap-x-2 bg-emerald-100/60 dark:bg-gray-800">
-                      Customer
+                      v-else-if="col.type === 'tag'"
+                      class="inline-block px-3 py-1 text-sm font-normal rounded-full text-emerald-500 gap-x-2 bg-emerald-100/60 dark:bg-gray-800 capitalize text-center">
+                      {{ getValue(col, item) }}
                     </div>
-                  </td>
-                  <td class="px-4 py-4 text-sm whitespace-nowrap">
-                    <div>
-                      <h4 class="text-gray-700 dark:text-gray-200">Content curating app</h4>
-                      <p class="text-gray-500 dark:text-gray-400">Brings all your news into one
-                        place</p>
-                    </div>
-                  </td>
-                  <td class="px-4 py-4 text-sm whitespace-nowrap">
-                    <div class="flex items-center">
-                      <img
-                        class="object-cover w-6 h-6 -mx-1 border-2 border-white rounded-full dark:border-gray-700 shrink-0"
-                        src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=256&q=80"
-                        alt="">
-                      <img
-                        class="object-cover w-6 h-6 -mx-1 border-2 border-white rounded-full dark:border-gray-700 shrink-0"
-                        src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=256&q=80"
-                        alt="">
-                      <img
-                        class="object-cover w-6 h-6 -mx-1 border-2 border-white rounded-full dark:border-gray-700 shrink-0"
-                        src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1256&q=80"
-                        alt="">
-                      <img
-                        class="object-cover w-6 h-6 -mx-1 border-2 border-white rounded-full dark:border-gray-700 shrink-0"
-                        src="https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=256&q=80"
-                        alt="">
-                      <p
-                        class="flex items-center justify-center w-6 h-6 -mx-1 text-xs text-blue-600 bg-blue-100 border-2 border-white rounded-full">
-                        +4</p>
-                    </div>
-                  </td>
-
-                  <td class="px-4 py-4 text-sm whitespace-nowrap">
-                    <div class="w-48 h-1.5 bg-blue-200 overflow-hidden rounded-full">
-                      <div class="bg-blue-500 w-2/3 h-1.5"></div>
+                    <div v-else>
+                      <h2 class="font-medium text-gray-800 dark:text-white ">{{ getValue(col, item) }}</h2>
                     </div>
                   </td>
 
@@ -125,69 +85,6 @@ const props = defineProps<{
                   </td>
                 </tr>
 
-                <tr v-for="item in data">
-                  <td class="px-4 py-4 text-sm font-medium whitespace-nowrap">
-                    <div>
-                      <h2 class="font-medium text-gray-800 dark:text-white ">Circooles</h2>
-                      <p class="text-sm font-normal text-gray-600 dark:text-gray-400">
-                        getcirooles.com</p>
-                    </div>
-                  </td>
-                  <td class="px-12 py-4 text-sm font-medium whitespace-nowrap">
-                    <div
-                      class="inline px-3 py-1 text-sm font-normal text-gray-500 bg-gray-100 rounded-full dark:text-gray-400 gap-x-2 dark:bg-gray-800">
-                      Churned
-                    </div>
-                  </td>
-                  <td class="px-4 py-4 text-sm whitespace-nowrap">
-                    <div>
-                      <h4 class="text-gray-700 dark:text-gray-200">Design software</h4>
-                      <p class="text-gray-500 dark:text-gray-400">Super lightweight design app</p>
-                    </div>
-                  </td>
-                  <td class="px-4 py-4 text-sm whitespace-nowrap">
-                    <div class="flex items-center">
-                      <img
-                        class="object-cover w-6 h-6 -mx-1 border-2 border-white rounded-full dark:border-gray-700 shrink-0"
-                        src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=256&q=80"
-                        alt="">
-                      <img
-                        class="object-cover w-6 h-6 -mx-1 border-2 border-white rounded-full dark:border-gray-700 shrink-0"
-                        src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=256&q=80"
-                        alt="">
-                      <img
-                        class="object-cover w-6 h-6 -mx-1 border-2 border-white rounded-full dark:border-gray-700 shrink-0"
-                        src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1256&q=80"
-                        alt="">
-                      <img
-                        class="object-cover w-6 h-6 -mx-1 border-2 border-white rounded-full dark:border-gray-700 shrink-0"
-                        src="https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=256&q=80"
-                        alt="">
-                      <p
-                        class="flex items-center justify-center w-6 h-6 -mx-1 text-xs text-blue-600 bg-blue-100 border-2 border-white rounded-full">
-                        +4</p>
-                    </div>
-                  </td>
-
-                  <td class="px-4 py-4 text-sm whitespace-nowrap">
-                    <div class="w-48 h-1.5 bg-blue-200 overflow-hidden rounded-full">
-                      <div class="bg-blue-500 w-2/5 h-1.5"></div>
-                    </div>
-                  </td>
-
-                  <td class="px-4 py-4 text-sm whitespace-nowrap">
-                    <button
-                      class="px-1 py-1 text-gray-500 transition-colors duration-200 rounded-lg dark:text-gray-300 hover:bg-gray-100">
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                        stroke="currentColor" class="w-6 h-6">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                          d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z" />
-                      </svg>
-                    </button>
-                  </td>
-                </tr>
-
-                
               </tbody>
             </table>
           </div>
@@ -195,36 +92,6 @@ const props = defineProps<{
       </div>
     </div>
 
-    <div class="mt-6 sm:flex sm:items-center sm:justify-between ">
-      <div class="text-sm text-gray-500 dark:text-gray-400">
-        Page <span class="font-medium text-gray-700 dark:text-gray-100">1 of 10</span>
-      </div>
-
-      <div class="flex items-center mt-4 gap-x-4 sm:mt-0">
-        <a href="#"
-          class="flex items-center justify-center w-1/2 px-5 py-2 text-sm text-gray-700 capitalize transition-colors duration-200 bg-white border rounded-md sm:w-auto gap-x-2 hover:bg-gray-100 dark:bg-gray-900 dark:text-gray-200 dark:border-gray-700 dark:hover:bg-gray-800">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-            stroke="currentColor" class="w-5 h-5 rtl:-scale-x-100">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 15.75L3 12m0 0l3.75-3.75M3 12h18" />
-          </svg>
-
-          <span>
-            previous
-          </span>
-        </a>
-
-        <a href="#"
-          class="flex items-center justify-center w-1/2 px-5 py-2 text-sm text-gray-700 capitalize transition-colors duration-200 bg-white border rounded-md sm:w-auto gap-x-2 hover:bg-gray-100 dark:bg-gray-900 dark:text-gray-200 dark:border-gray-700 dark:hover:bg-gray-800">
-          <span>
-            Next
-          </span>
-
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-            stroke="currentColor" class="w-5 h-5 rtl:-scale-x-100">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 8.25L21 12m0 0l-3.75 3.75M21 12H3" />
-          </svg>
-        </a>
-      </div>
-    </div>
+    
   </section>
 </template>

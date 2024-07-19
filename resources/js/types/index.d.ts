@@ -8,7 +8,7 @@ export interface User {
 }
 
 
-export interface Tasks {
+export interface Task {
   id: number;
   assignee_id?: number;
   user_id?: number;
@@ -39,6 +39,9 @@ export type ColumnData = {
   key: string;
   label: string;
   sortable?: boolean;
+  foreignKey?: string;
+  type?: string;
+  align?: 'left' | 'right' | 'center';
 }
 
 

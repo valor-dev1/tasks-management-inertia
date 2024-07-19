@@ -1,15 +1,25 @@
+<script setup lang="ts">
+
+defineProps<{
+  total: number | undefined;
+  text: string;
+  tagline: string;
+}>();
+
+const emit = defineEmits(['search']);
+
+</script>
 <template>
       <div class="sm:flex sm:items-center sm:justify-between">
       <div>
         <div class="flex items-center gap-x-3">
           <h2 class="text-lg font-medium text-gray-800 dark:text-white">Tasks management</h2>
 
-          <span class="px-3 py-1 text-xs text-blue-600 bg-blue-100 rounded-full dark:bg-gray-800 dark:text-blue-400">240
-            tasks</span>
+          <span class="px-3 py-1 text-xs text-blue-600 bg-blue-100 rounded-full dark:bg-gray-800 dark:text-blue-400">{{ total }}
+            {{ text }}</span>
         </div>
 
-        <p class="mt-1 text-sm text-gray-500 dark:text-gray-300">These companies have purchased in the last 12
-          months.</p>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-300">{{ tagline }}</p>
       </div>
 
       <div class="flex items-center mt-4 gap-x-3">
@@ -38,7 +48,7 @@
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
 
-          <span>Add Task</span>
+          <span>Add New</span>
         </button>
       </div>
     </div>
@@ -71,7 +81,10 @@
           </svg>
         </span>
 
-        <input type="text" placeholder="Search"
+        <input 
+          type="text" 
+          placeholder="Search"
+          @search="emit('search')"
           class="block w-full py-1.5 pr-5 text-gray-700 bg-white border border-gray-200 rounded-lg md:w-80 placeholder-gray-400/70 pl-11 rtl:pr-11 rtl:pl-5 dark:bg-gray-900 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 dark:focus:border-blue-300 focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40">
       </div>
     </div>
